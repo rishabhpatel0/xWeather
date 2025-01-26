@@ -3,16 +3,21 @@ import axios from "axios";
 
 function App() {
   const [city, setCity] = useState(""); // City entered by user
-  const [data, setData] = useState({}); // Weather data
+  const [data, setData] = useState(null); // Weather data
   const [loading, setLoading] = useState(false); // Loading state
 
   const API_KEY = "05f2685c9b3541daa36102740252601"; // Your API key
 
   const handleSearch = async () => {
-    if (!city.trim()) return; // Don't call if the city is empty
+    if (!city.trim()) {
+      alert("Please enter a city name.");
+      return;
+    }
 
     try {
       setLoading(true); // Show loading while fetching
+      setData(null); // Clear previous data
+
       const res = await axios.get(
         `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${city}&aqi=no`
       );
@@ -26,7 +31,7 @@ function App() {
       });
     } catch (error) {
       console.error("Error fetching weather data:", error);
-      alert("Could not fetch weather data. Please check the city name and try again.");
+      alert("Failed to fetch weather data. Please check the city name and try again.");
     } finally {
       setLoading(false); // Hide loading after fetching
     }
@@ -75,10 +80,10 @@ function App() {
         </button>
       </div>
 
-      {loading ? (
-        <p className="loading-message">Loading data…</p>
-      ) : Object.keys(data).length > 0 ? (
-        <div className="weather-cards" style={{ display: "flex", gap: "10px" }}>
+      {loading && <p>Loading data…</p>}
+
+      {data && (
+        <div className="weather-cards" style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
           <div className="weather-card" style={cardStyle}>
             <h4>Temperature</h4>
             <p>{data.temperature}</p>
@@ -96,8 +101,6 @@ function App() {
             <p>{data.windSpeed}</p>
           </div>
         </div>
-      ) : (
-        <p style={{ color: "#555" }}>Enter a city name to get the weather details.</p>
       )}
     </div>
   );
