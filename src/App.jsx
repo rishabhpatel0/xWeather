@@ -1,50 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
-import WeatherComponent from "./Components/WeatherComponent";
 
 function App() {
-  const [city, setCity] = useState(""); 
-  const [data, setData] = useState({}); 
-  const [loading, setLoading] = useState(false); 
+  const [city, setCity] = useState(""); // City entered by user
+  const [data, setData] = useState({}); // Weather data
+  const [loading, setLoading] = useState(false); // Loading state
 
-  const API_KEY = "05f2685c9b3541daa36102740252601"; 
-  const [debouncedCity, setDebouncedCity] = useState("");
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedCity(city); 
-    }, 1000); 
+  const API_KEY = "05f2685c9b3541daa36102740252601"; // Your API key
 
-    return () => clearTimeout(timer); 
-  }, [city]);
+  const handleSearch = async () => {
+    if (!city.trim()) return; // Don't call if the city is empty
 
- 
-  useEffect(() => {
-    if (!debouncedCity.trim()) return; 
-
-    const fetchWeather = async () => {
-      try {
-        setLoading(true); 
-        const res = await axios.get(
-          `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${debouncedCity}&aqi=no`
-        );
-        const { temp_c, humidity, condition, wind_kph, feelslike_c } = res.data.current;
-        setData({
-          temperature: `${temp_c}°C`,
-          humidity: `${humidity}%`,
-          condition: condition.text,
-          windSpeed: `${wind_kph} kph`,
-          feelsLike: `${feelslike_c}°C`,
-        });
-      } catch (error) {
-        console.error("Error fetching weather data:", error);
-        alert("Failed to fetch weather data");
-      } finally {
-        setLoading(false); 
-      }
-    };
-
-    fetchWeather(); 
-  }, [debouncedCity]);
+    try {
+      setLoading(true); // Show loading while fetching
+      const res = await axios.get(
+        `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${city}&aqi=no`
+      );
+      const { temp_c, humidity, condition, wind_kph, feelslike_c } = res.data.current;
+      setData({
+        temperature: `${temp_c}°C`,
+        humidity: `${humidity}%`,
+        condition: condition.text,
+        windSpeed: `${wind_kph} kph`,
+        feelsLike: `${feelslike_c}°C`,
+      });
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+      alert("Could not fetch weather data. Please check the city name and try again.");
+    } finally {
+      setLoading(false); // Hide loading after fetching
+    }
+  };
 
   return (
     <div
@@ -74,7 +60,7 @@ function App() {
           }}
         />
         <button
-          onClick={() => setCity(city)} 
+          onClick={handleSearch}
           style={{
             padding: "10px 20px",
             backgroundColor: "#28a745",
@@ -88,15 +74,43 @@ function App() {
           Search
         </button>
       </div>
+
       {loading ? (
-        <p style={{ color: "#555" }}>Loading data...</p>
+        <p className="loading-message">Loading data…</p>
       ) : Object.keys(data).length > 0 ? (
-        <WeatherComponent data={data} />
+        <div className="weather-cards" style={{ display: "flex", gap: "10px" }}>
+          <div className="weather-card" style={cardStyle}>
+            <h4>Temperature</h4>
+            <p>{data.temperature}</p>
+          </div>
+          <div className="weather-card" style={cardStyle}>
+            <h4>Humidity</h4>
+            <p>{data.humidity}</p>
+          </div>
+          <div className="weather-card" style={cardStyle}>
+            <h4>Condition</h4>
+            <p>{data.condition}</p>
+          </div>
+          <div className="weather-card" style={cardStyle}>
+            <h4>Wind Speed</h4>
+            <p>{data.windSpeed}</p>
+          </div>
+        </div>
       ) : (
         <p style={{ color: "#555" }}>Enter a city name to get the weather details.</p>
       )}
     </div>
   );
 }
+
+const cardStyle = {
+  border: "1px solid #ccc",
+  borderRadius: "8px",
+  padding: "10px",
+  width: "150px",
+  textAlign: "center",
+  backgroundColor: "#fff",
+  boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+};
 
 export default App;
