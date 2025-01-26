@@ -80,7 +80,7 @@ function App() {
         </button>
       </div>
 
-      {loading && <p>Loading data…</p>}
+      {loading && <p>Loading data...</p>}
 
       {data && (
         <div className="weather-cards" style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
